@@ -1,0 +1,18 @@
+{
+  "format": 1,
+  "name": "hello-kotlin",
+  "displayName": "Hello Kotlin",
+  "version": "1.0.0",
+  "release": 1,
+  "minKav": 45,
+  "api": 3,
+  "description": "A card on Kav's Home and a screen of its own, written in Kotlin.",
+  "native": { "dex": "classes.dex", "entry": "org.example.hello.Hello" },
+  "contributions": [
+    { "id": "card", "capability": "slot.home" },
+    { "id": "screens", "capability": "page.provide" }
+  ],
+  "pages": [
+    { "id": "about", "title": { "en": "Hello Kotlin", "he": "שלום קוטלין" } }
+  ]
+}

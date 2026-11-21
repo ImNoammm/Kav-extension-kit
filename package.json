@@ -1,0 +1,17 @@
+{
+  "name": "kav-extension-kit",
+  "version": "0.1.0",
+  "description": "Developer kit for Kav extensions: the kavx command line, which builds Kotlin and Java extensions into a bundle, samples and a starter template",
+  "license": "GPL-3.0-only",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "kavx": "bin/kavx.js"
+  },
+  "exports": {
+    ".": "./lib/index.js"
+  },
+  "engines": {
+    "node": ">=22.2"
+  }
+}

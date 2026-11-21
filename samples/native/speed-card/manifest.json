@@ -1,0 +1,7 @@
+{
+  "format": 1, "minKav": 45, "api": 2, "name": "speed-card", "displayName": "Speed", "version": "1.0.0", "release": 1,
+  "description": "Your speed on Kav's Home, from your phone's GPS.",
+  "native": {"dex": "classes.dex", "entry": "org.example.speed.Speed"},
+  "contributions": [{"id": "card", "capability": "slot.home"}, {"id": "screens", "capability": "page.provide"}],
+  "pages": [{"id": "settings", "title": {"en": "Speed settings", "he": "הגדרות מהירות"}}]
+}

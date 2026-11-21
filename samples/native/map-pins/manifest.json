@@ -1,0 +1,6 @@
+{
+  "format": 1, "minKav": 45, "api": 2, "name": "map-pins", "displayName": "Map pins", "version": "1.0.0", "release": 1,
+  "description": "A marker, a line and an area on Kav's maps, and its own look for Kav's stops.",
+  "native": {"dex": "classes.dex", "entry": "org.example.Pins"},
+  "contributions": []
+}

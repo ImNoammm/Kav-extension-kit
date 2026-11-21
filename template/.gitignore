@@ -1,0 +1,3 @@
+# kavx bundle writes each extension's compiled code here, and the bundle beside.
+extensions/*/build/
+/*.kavb

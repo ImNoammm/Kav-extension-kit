@@ -1,0 +1,6 @@
+{
+  "format": 1, "minKav": 45, "api": 2, "name": "crash-test", "displayName": "Crash test", "version": "1.0.0", "release": 1,
+  "description": "Closes Kav when you tap its button, to test the crash guard.",
+  "native": {"dex": "classes.dex", "entry": "org.example.crash.Crash"},
+  "contributions": [{"id": "card", "capability": "slot.home"}]
+}

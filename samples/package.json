@@ -1,0 +1,14 @@
+{
+  "name": "kav-sample-extensions",
+  "version": "1.0.0",
+  "description": "Sample Kav extensions in Java",
+  "license": "GPL-3.0-only",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "kavx": "kavx"
+  },
+  "devDependencies": {
+    "kav-extension-kit": "file:.."
+  }
+}

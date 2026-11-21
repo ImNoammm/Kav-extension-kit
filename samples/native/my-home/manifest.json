@@ -1,0 +1,8 @@
+{
+  "format": 1, "minKav": 45, "api": 2, "name": "my-home", "displayName": "My Home", "version": "1.0.0", "release": 1,
+  "description": "A Home and a tab of its own, as Android views.",
+  "native": {"dex": "classes.dex", "entry": "org.example.MyHome"},
+  "contributions": [{"id": "screens", "capability": "page.provide"}, {"id": "home", "capability": "home.body"}],
+  "pages": [{"id": "home", "title": {"en": "My Home", "he": "הבית שלי"}},
+            {"id": "clock", "title": {"en": "Clock", "he": "שעון"}, "tab": true}]
+}

@@ -1,0 +1,12 @@
+{
+  "format": 1, "minKav": 45, "api": 2, "name": "native-rules", "displayName": "Native planner", "version": "1.0.0", "release": 1,
+  "description": "A trip planner, route rules and a stop board, all in Java.",
+  "native": {"dex": "classes.dex", "entry": "org.example.Rules"},
+  "contributions": [
+    {"id": "planner", "capability": "plan.provide"},
+    {"id": "no-late", "capability": "results.filter"},
+    {"id": "latest-first", "capability": "results.rank"},
+    {"id": "tag", "capability": "results.annotate"},
+    {"id": "piers", "capability": "board.provide"}
+  ]
+}
