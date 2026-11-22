@@ -12,7 +12,7 @@ import kav.kavapp.api.KavExtension;
 public class PartsSample implements KavExtension {
     @Override public void start(Kav kav) {
         kav.part("home.pay", "after", (Context c, String about) ->
-            kav.ui().card(c, kav.ui().row(c, "info", "After the pay card", "Added by the Parts sample", null)));
+            kav.ui().card(c, kav.ui().row(c, "info", "After the pay card", null, null)));
         // about: {"trip", "leg", "index"}. Returning null shows Kav's own card instead.
         kav.part("trip.ride", "replace", (Context c, String about) -> {
             JSONObject leg;
