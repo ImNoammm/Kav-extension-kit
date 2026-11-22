@@ -65,7 +65,7 @@ Kav" link for it.
 - **`starter-kotlin/`**, the starter, and **`api/`**, Kav's API as a jar to compile against (made from Kav's own
   sources by `tools/make-api-jar.js`), with its sources to read.
 - **Samples** in `samples/native/`, in Java: a speed card with the GPS and a notification, map pins, a planner with
-  route rules and a stop board, a Home and a tab, a crash test.
+  route rules and a stop board, a Home and a tab, a crash test, and for API 4 paying, screen parts and a hook.
 - **A template** for a source repository.
 
 | Read | For |
@@ -77,7 +77,7 @@ Kav" link for it.
 | [docs/what-riders-see.md](docs/what-riders-see.md) | What Kav tells riders about your extension |
 | [docs/riders-wording.md](docs/riders-wording.md) | The names of the screens and switches a rider meets, in English and Hebrew |
 | [docs/testing.md](docs/testing.md) | Checking, unit-testing hooks, trying on a phone |
-| [samples/](samples/) | Five small extensions to read |
+| [samples/](samples/) | Eight small extensions to read |
 | [template/](template/) | The repository to copy |
 
 ## What an extension can do

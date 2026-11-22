@@ -1,0 +1,6 @@
+{
+  "format": 1, "minKav": 46, "api": 4, "name": "hook-sample", "displayName": "Hook sample", "version": "1.0.0", "release": 1,
+  "description": "Hooks one of Kav's own methods by name: every length of time Kav writes in minutes says it was hooked.",
+  "native": {"dex": "classes.dex", "entry": "org.example.hook.HookSample"},
+  "contributions": [{"id": "minutes", "capability": "hooks"}]
+}

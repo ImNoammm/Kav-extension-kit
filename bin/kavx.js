@@ -40,7 +40,8 @@ const TOLD = {
   'look': 'changes the colors', 'adds': 'adds', 'slot-home': 'can add a card to the Home screen', 'slot-results': 'can add a line to trip results',
   'slot-trip': "can add to a trip's page", 'slot-stop': 'can add to stop boards', 'sees-searches': 'sees trip searches',
   'changes-results': 'changes results', 'keeps-data': 'keeps its settings on the phone', 'native': 'runs its own Android code: full access',
-  'permissions': 'asks for permissions',
+  'permissions': 'asks for permissions', 'actions': 'takes over', 'parts': "changes parts of Kav's screens",
+  'hooks': 'changes how Kav itself works',
 };
 
 function describe(m) {
