@@ -3,15 +3,17 @@
 // still has as a method, after R8, read from the APK's dex files. kavx check holds an extension's declared hooks
 // ("hooks" in its manifest) against it. Made with the API jar, for each release of Kav.
 //
-//   node tools/hookable.js <Kav's release APK> <Kav's versionCode>
+//   node tools/hookable.js <release APK> <versionCode> [community and kit sample .kavb files]
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 
-const [apk, version] = process.argv.slice(2);
-if (!apk || !/^\d+$/.test(version ?? '')) { console.error("usage: node tools/hookable.js <Kav's release APK> <Kav's versionCode>"); process.exit(1); }
+import { hookLine, missingHooks, readBundle } from '../lib/package.js';
+
+const [apk, version, ...bundles] = process.argv.slice(2);
+if (!apk || !/^\d+$/.test(version ?? '')) { console.error("usage: node tools/hookable.js <release APK> <versionCode> [community and kit sample .kavb files]"); process.exit(1); }
 
 function uleb(b, at) {
   let v = 0, shift = 0, x;
@@ -66,7 +68,18 @@ function methodsOf(dex, prefix) {
 const names = execFileSync('unzip', ['-Z1', apk], { encoding: 'utf8' }).split('\n').filter((n) => /^classes\d*\.dex$/.test(n));
 const dexes = names.map((n) => execFileSync('unzip', ['-p', apk, n], { maxBuffer: 1 << 30 }));
 if (dexes.length === 0) { console.error(`no dex in ${apk}`); process.exit(1); }
-const all = [...new Set(dexes.flatMap((d) => methodsOf(Buffer.from(d), 'Luk/noammm/kav/')))].sort();
+const functions = new Set(dexes.flatMap((d) => methodsOf(Buffer.from(d), 'Luk/noammm/kav/')));
+for (const file of bundles) {
+  for (const { manifest, name } of readBundle(fs.readFileSync(file)).extensions) {
+    if (!manifest) continue;
+    for (const hook of missingHooks(manifest, functions)) {
+      console.error(`${file} (${name}): Kav ${version} has no ${hookLine(hook)}`);
+      process.exitCode = 1;
+    }
+  }
+}
+if (process.exitCode) process.exit(process.exitCode);
+const all = [...functions].sort();
 const dir = fileURLToPath(new URL('../api/hookable/', import.meta.url));
 fs.mkdirSync(dir, { recursive: true });
 const out = path.join(dir, `${version}.txt.gz`);
