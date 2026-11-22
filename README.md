@@ -61,7 +61,8 @@ Kav" link for it.
   - `kavx bundle <folder> [--out file.kavb] [--name name]` builds every extension under `<folder>/extensions/` (or
     the folder itself, when it is one extension) into one bundle;
   - `kavx verify <file.kavb>` reads a bundle the way Kav does;
-  - `kavx link github <owner/repo>` prints the add-source links.
+  - `kavx link github <owner/repo>` prints the add-source links;
+  - `kavx hooks <file.kavb>` prints the functions of Kav's a bundle's extensions declare they hook.
 - **`starter-kotlin/`**, the starter, and **`api/`**, Kav's API as a jar to compile against (made from Kav's own
   sources by `tools/make-api-jar.js`), with its sources to read.
 - **Samples** in `samples/native/`, in Java: a speed card with the GPS and a notification, map pins, a planner with
