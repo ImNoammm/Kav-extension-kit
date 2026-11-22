@@ -1,5 +1,5 @@
 {
-  "format": 1, "minKav": 46, "api": 4, "name": "pay-sample", "displayName": "Pay sample", "version": "1.0.0", "release": 1,
+  "format": 1, "minKav": 47, "api": 4, "name": "pay-sample", "displayName": "Pay sample", "version": "1.0.0", "release": 1,
   "description": "Takes over Kav's Pay buttons with a pretend ticket, which goes into Kav's own tickets and ride history.",
   "native": {"dex": "classes.dex", "entry": "org.example.pay.PaySample"},
   "contributions": [{"id": "pay", "capability": "action.pay"}]

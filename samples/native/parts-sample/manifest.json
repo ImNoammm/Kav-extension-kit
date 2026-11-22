@@ -1,5 +1,5 @@
 {
-  "format": 1, "minKav": 46, "api": 4, "name": "parts-sample", "displayName": "Parts sample", "version": "1.0.0", "release": 1,
+  "format": 1, "minKav": 47, "api": 4, "name": "parts-sample", "displayName": "Parts sample", "version": "1.0.0", "release": 1,
   "description": "A line after Home's pay card, and each ride of a trip drawn its own way.",
   "native": {"dex": "classes.dex", "entry": "org.example.parts.PartsSample"},
   "contributions": [{"id": "pay-line", "capability": "part.home.pay"}, {"id": "rides", "capability": "part.trip.ride"}]
