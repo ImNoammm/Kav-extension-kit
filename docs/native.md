@@ -580,7 +580,7 @@ when the part next shows.
 | `alert.sheet` | `{"label", "ids"}` | A service alert's notices, under its heading. Needs `"api": 5`. | `ui/Common.kt:611` |
 | `report.step` | `report`'s args, with `"step"` | Each page of the report form: `about`, `what`, `ride`, `more`, `you` or `check`. Needs `"api": 5`. | `ui/Report.kt:713` |
 | `search.result` | `{"place", "section", "index"}` | Each result of Kav's place search. `place` is as `place.pick` gives it; `section` is `frequent` (places the rider often goes to), `recent`, `around` (busy stations around the rider's town, while nothing is typed), `places` or `stops`. Needs `"api": 5`. | `ui/Pickers.kt:443` |
-| `screen.overlay` | `{}` | Over the whole of Kav's screen, under its dialogs and sheets: `"after"` only ([below](#over-the-whole-screen)). Needs `"api": 5`. | `MainActivity.kt:939` |
+| `screen.overlay` | `{"tab"}` | Over the whole of Kav's screen, under its dialogs and sheets: `"after"` only ([below](#over-the-whole-screen)). Needs `"api": 5`. | `MainActivity.kt:939` |
 
 `{"trip"}` is the route as route rules get it ([hooks.md](hooks.md)); `leg` one of its `legs`, and `index` its place
 in them. API 3's cards still sit where they always did, beside these parts: `home` after `home.suggestions`, `trip`
@@ -595,7 +595,8 @@ The part `screen.overlay` puts your view over the whole of Kav's screen, as big 
 and sheets (they are windows of their own). Only `"after"` is taken: `"before"` and `"replace"` throw. Your view is
 see-through where it draws nothing, and a touch it doesn't take (`false` from its first `onTouchEvent`, the default
 of a plain `View`) goes on to Kav as if your view weren't there; one it takes is yours to the end. It isn't shown in
-picture in picture, nor in safe mode. A view that wants Back while it shows takes focus (`setFocusable(true)`,
+picture in picture, nor in safe mode. Kav makes your view again when the tab changes, with the tab shown in
+`about` (`{"tab"}`, as the `tabbar` part has it). A view that wants Back while it shows takes focus (`setFocusable(true)`,
 `requestFocus()`) and handles `KEYCODE_BACK` in `onKeyDown`; let go of focus when you're done, or Back stays yours.
 
 `kav.capture(captured)`, with a contribution `screen.capture`, tells you what Kav's screen shows now, on the main
@@ -630,9 +631,11 @@ for it only when you need the places pieces leave.
 
 With `captureBehind`, the picture has only the pieces, each with only what is its own: what of a piece's box is what is
 behind it (the map under a button, the background around a place's tile) is clear, and so is everything in no piece.
-Drawn over `behind`, it is the screen again. Each piece's box is tight to what is its own, and a piece with nothing of
-its own (a box that only lies over the map) isn't in `pieces`. So a piece you cut from the picture by its box carries
-its own face and nothing of what was around it.
+Kav's background, a theme's background picture and its maps are never in it, also inside a piece's outline: a
+see-through tile carries nothing of what shows inside it. What is a piece's own is as Kav draws it, as clear as it is,
+so a glass pane stays see-through. Drawn over `behind`, it is the screen again. Each piece's box is tight to what is its
+own, and a piece with nothing of its own (a box that only lies over the map) isn't in `pieces`. So a piece you cut from
+the picture by its box carries its own face and nothing of what was around it.
 
 To move Kav's pieces about, draw `behind` over the whole of your view (that hides Kav's own screen, which stays as it
 was under it), and draw each piece from the picture where it moves to. Take every touch while you do, so none reaches
