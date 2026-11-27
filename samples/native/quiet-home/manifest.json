@@ -1,0 +1,21 @@
+{
+  "format": 1, "kind": "theme", "minKav": 48, "api": 5,
+  "name": "quiet-home", "displayName": "Quiet home", "version": "1.0.0", "release": 1,
+  "description": "A calm green look, and a Home without the suggestions card unless you want it back.",
+  "native": {"dex": "classes.dex", "entry": "org.example.quiet.QuietHome"},
+  "contributions": [{"id": "suggestions", "capability": "part.home.suggestions"}],
+  "settings": [
+    {"key": "hide", "type": "toggle", "default": true,
+     "label": {"en": "Hide Home's suggestions", "he": "הסתרת ההצעות במסך הבית"}}
+  ],
+  "reasons": {
+    "parts": {"en": "Hides Home's suggestions card while its setting is on", "he": "מסתירה את כרטיס ההצעות במסך הבית כשההגדרה פועלת"}
+  },
+  "theme": {
+    "looks": {
+      "dark": {"accent": "#A8D8A0"},
+      "oled": {"accent": "#A8D8A0"},
+      "light": {"accent": "#3E7D35"}
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "format": 1, "minKav": 48, "api": 5, "name": "shuttle-widgets", "displayName": "Shuttle widgets", "version": "1.0.0", "release": 1,
+  "description": "Two home screen widgets: the next shuttles from the stop you choose, and your recent trips, each a tap from planning again.",
+  "native": {"dex": "classes.dex", "entry": "org.example.widgets.ShuttleWidgets"},
+  "contributions": [
+    {"id": "widgets", "capability": "widget.provide"},
+    {"id": "history", "capability": "trips.history"},
+    {"id": "screens", "capability": "page.provide"}
+  ],
+  "widgets": [
+    {"id": "next", "size": "wide",
+     "title": {"en": "Next shuttles", "he": "ההסעות הבאות"},
+     "description": {"en": "The next shuttles from the stop you choose", "he": "ההסעות הבאות מהתחנה שבחרתם"}},
+    {"id": "trips", "size": "small",
+     "title": {"en": "Recent trips", "he": "נסיעות אחרונות"},
+     "description": {"en": "Plan one of your recent trips again", "he": "תכנון מחדש של אחת הנסיעות האחרונות"}}
+  ],
+  "pages": [{"id": "line", "title": {"en": "Shuttle line", "he": "קו הסעה"}, "entry": false}],
+  "settings": [
+    {"key": "stop", "type": "choice", "label": {"en": "Stop", "he": "תחנה"}, "default": "harbor", "options": [
+      {"value": "harbor", "label": {"en": "Harbor", "he": "הנמל"}},
+      {"value": "market", "label": {"en": "Market", "he": "השוק"}},
+      {"value": "campus", "label": {"en": "Campus", "he": "הקמפוס"}}
+    ]}
+  ]
+}

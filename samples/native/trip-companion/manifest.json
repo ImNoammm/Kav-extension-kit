@@ -1,0 +1,12 @@
+{
+  "format": 1, "minKav": 48, "api": 5, "name": "trip-companion", "displayName": "Trip companion", "version": "1.0.0", "release": 1,
+  "description": "Follows your trips and reads your trip history, once you allow each, adds a line to the wait and ride cards, and a banner under navigation's step dots.",
+  "native": {"dex": "classes.dex", "entry": "org.example.trips.TripCompanion"},
+  "contributions": [
+    {"id": "history", "capability": "trips.history"},
+    {"id": "follow", "capability": "trips.follow"},
+    {"id": "wait-line", "capability": "part.nav.wait.details"},
+    {"id": "ride-line", "capability": "part.nav.ride.details"},
+    {"id": "banner", "capability": "part.nav.banner"}
+  ]
+}

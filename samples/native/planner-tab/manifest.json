@@ -1,0 +1,10 @@
+{
+  "format": 1, "minKav": 48, "api": 5, "name": "planner-tab", "displayName": "Sample planner", "version": "1.0.0", "release": 1,
+  "description": "A planner in a results tab of its own, with live times, a bus to follow, an alert and stop photos.",
+  "native": {"dex": "classes.dex", "entry": "org.example.tabs.PlannerTab"},
+  "contributions": [
+    {"id": "planner", "capability": "plan.provide"},
+    {"id": "board", "capability": "board.provide"},
+    {"id": "photos", "capability": "stop.photo"}
+  ]
+}

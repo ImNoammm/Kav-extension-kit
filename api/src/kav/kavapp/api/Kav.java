@@ -9,8 +9,8 @@ import android.content.Context;
  */
 public interface Kav {
     /** This API's version. A newer Kav keeps every method of an older one. 2: map, provide, home, onSettings, pickPlace, settingsScreen.
-     *  3: KavUi's multi-line textField, iconButton and pages. 4: action, kavAction, part, addTicket, hook, hooked, deoptimize, kavClassLoader. */
-    int API = 4;
+     *  3: KavUi's multi-line textField, iconButton and pages. 4: action, kavAction, part, addTicket, hook, hooked, deoptimize, kavClassLoader. 5: prefs, trips, onTrip, widget, refreshWidget, stops, vehicles, departures, addRides. */
+    int API = 5;
 
     int apiVersion();
 
@@ -21,6 +21,58 @@ public interface Kav {
     String id();
 
     String locale();
+
+    /** API 5. Rider display settings as JSON: stopNames ("en" or "he"), clock (12 or 24), and locale. */
+    default String prefs() { return "{}"; }
+
+    /** API 5. The rider's recent trips, newest first, as Kav's Recent trips list has them: a JSON array of {"from", "to",
+     *  "stopovers", "at", "planner"}. Each place is {"name", "detail", "lat", "lon"}; from is null for a trip from where
+     *  the rider was; at is when it was searched, in seconds since 1970; planner is the extension that planned it
+     *  ("ext:<publisher>/<dataset>"), "" for Kav's. null until the rider allows it on the extension's page. Needs a
+     *  contribution with capability "trips.history"; without it, it throws. */
+    default String trips() { return null; }
+
+    /** API 5. Told about the trip the rider follows (Start on a trip's page), as JSON text: {"event", "trip", "from",
+     *  "to", "step", "reason"}. event: "start", "step" (the rider moved on to another step), "replan" (a new route on
+     *  the way) or "end" (reason "arrived", or "ended" when the rider ended it before). A trip already under way is told
+     *  at once, as "start". Only while the rider allows it on the extension's page; on a thread of Kav's, never the main
+     *  one. null stops it. Needs a contribution with capability "trips.follow"; without it, it throws. */
+    default void onTrip(TripListener listener) {}
+
+    /** API 5. A home screen widget's content, for a widget the manifest declares in "widgets" (with a contribution with
+     *  capability "widget.provide"; without it, it throws). Kav owns the widgets on the home screen; the rider places one
+     *  and chooses this one for it. Kav asks for its content when it shows, refreshes or the rider opens Kav, on a thread
+     *  of Kav's, never the main one, and draws it in its own look. null stops it. */
+    default void widget(String id, Widget widget) {}
+
+    /** API 5. Asks Kav to ask a widget of this extension for its content again now (its data changed). From any thread. */
+    default void refreshWidget(String id) {}
+
+    /** API 5. Stops from Kav's timetable on the phone. query, as JSON text: {"near": [lat, lon], "name", "mode", "code",
+     *  "limit"}, each optional; the stops that match all given, nearest first with near, else by name, at most limit (20
+     *  by default, 200 at most). mode is the GTFS route type of a stop's lines (a train station 2). Answers a JSON array
+     *  of {"stop", "code", "name", "city", "lat", "lon", "mode", "platform"}, with "metres" when near is given; null
+     *  until the timetable has loaded. From any thread. */
+    default String stops(String query) { return null; }
+
+    /** API 5. The live vehicles Kav has, as its Live tab and a line's page show them. query: {"line": "<number>"}, every
+     *  vehicle on the routes with that number, or {"near": [lat, lon], "km"}, those around a place; both, the line's
+     *  nearest the place first. Answers a JSON array of {"key", "plate", "route", "line", "to", "agency", "mode", "lat",
+     *  "lon", "bearing", "speed", "at"}, with "metres" when near is given; null when
+     *  Kav's live source can't be reached. It asks the network: never on the main thread, where it throws. */
+    default String vehicles(String query) { return null; }
+
+    /** API 5. A stop's next departures, as its board in Kav shows them now. query: {"stop": "il.mot/gtfs/stop/<code>",
+     *  "limit"} (20 by default, 100 at most). Answers a JSON array of {"line", "to", "mode", "platform", "at", "live",
+     *  "cancelled"}, times in seconds since 1970, live null for one with no live time; null when Kav doesn't know the
+     *  stop or its timetable hasn't loaded. It asks the network: never on the main thread, where it throws. */
+    default String departures(String query) { return null; }
+
+    /** API 5. Rides already over, into Kav's ride history (Settings › Paying › Ride history, Home's "This month"): a JSON
+     *  array of {"key", "kind", "line", "from", "to", "at", "riders", "band", "price"}, kind "BUS", "TRAIN" or
+     *  "LIGHT_RAIL", at in milliseconds, band the fare's reach in km, price in agorot. The same key again updates that ride. Kav keeps the key as
+     *  "ext:<id()>:<key>", as with addTicket. A ride that isn't right throws. From any thread. */
+    default void addRides(String rides) {}
 
     /**
      * A card on one of Kav's screens: "home", "results" (a line under each route of a search's results), "trip" or
@@ -124,6 +176,21 @@ public interface Kav {
     /** A screen's view. args: the page's arguments, as JSON text. */
     interface Screen {
         android.view.View create(Context context, String args);
+    }
+
+    /** API 5. A trip event (onTrip), as JSON text. */
+    interface TripListener {
+        void trip(String event);
+    }
+
+    /** API 5. A home screen widget. content: its content as JSON text (docs/native.md has its fields), asked with args,
+     *  {"widget", "rows", "width", "height"}: rows is how many fit, width and height its size in dp. Answer within 3
+     *  seconds; Kav shows the last content it showed until then, and when it fails. tapped: a tap on a part whose action
+     *  is {"call": "<name>"}, told {"widget", "call", "row"}; Kav asks for the content again after it. */
+    interface Widget {
+        String content(String args) throws Exception;
+
+        default void tapped(String tap) throws Exception {}
     }
 
     /** Its settings, all of them, as JSON text, after the rider changed one. */

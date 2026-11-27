@@ -1,0 +1,12 @@
+{
+  "format": 1, "minKav": 48, "api": 5, "name": "spots-sample", "displayName": "Spots sample", "version": "1.0.0", "release": 1,
+  "description": "Live vehicles on a line's page, a stop's next departures under its name, the nearest train station on Home, and a vehicle tapped on Live told first.",
+  "native": {"dex": "classes.dex", "entry": "org.example.spots.SpotsSample"},
+  "contributions": [
+    {"id": "line-live", "capability": "part.line.live"},
+    {"id": "stop-next", "capability": "part.stop.header"},
+    {"id": "nearest-train", "capability": "part.home.nearest"},
+    {"id": "live-list", "capability": "part.live.list"},
+    {"id": "vehicle", "capability": "action.live.vehicle.open"}
+  ]
+}

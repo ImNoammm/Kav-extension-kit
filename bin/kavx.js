@@ -43,20 +43,23 @@ function build(folder) {
 // What Kav tells the rider, line by line. Kav words each line itself; these are the kit's descriptions.
 const TOLD = {
   'kind': 'what it is', 'screens': 'has its own screens', 'tab': 'has a page you can pin as a tab', 'home': 'can replace the Home screen',
-  'look': 'changes the colors', 'adds': 'adds', 'slot-home': 'can add a card to the Home screen', 'slot-results': 'can add a line to trip results',
-  'slot-trip': "can add to a trip's page", 'slot-stop': 'can add to stop boards', 'sees-searches': 'sees trip searches',
+  'look': 'changes how Kav looks', 'adds': 'adds', 'slot-home': 'can add a card to the Home screen', 'slot-results': 'can add a line to trip results',
+  'slot-trip': "can add to a trip's page", 'slot-stop': 'can add to stop boards', 'widgets': 'adds widgets to the home screen', 'sees-searches': 'sees trip searches',
   'changes-results': 'changes results', 'keeps-data': 'keeps its settings on the phone', 'native': 'runs its own Android code: full access',
   'permissions': 'asks for permissions', 'actions': 'takes over', 'parts': "changes parts of Kav's screens",
   'hooks': 'changes how Kav itself works',
 };
 
 function describe(m) {
-  say(`  ${m.displayName} (${m.name}) ${m.version}, release ${m.release}`);
+  say(`  ${m.displayName} (${m.name}) ${m.version}, release ${m.release}${m.isTheme ? ', a theme' : ''}`);
   for (const c of m.contributions) say(`  does       ${c.capability} as "${c.id}"`);
   if (m.native) say(`  native     ${m.native.entry}, from ${m.native.dex}`);
   for (const p of m.screens.pages) say(`  page       ${p.id}: ${p.title.en}${p.tab ? ' (can be pinned as a tab)' : ''}${p.entry ? '' : ' (opened from another page only)'}`);
   for (const s of m.screens.settings) say(`  setting    ${s.key} (${s.type}): ${s.label.en}, default ${JSON.stringify(s.default)}`);
-  if (m.theme) say(`  theme      ${Object.entries(m.theme.looks).map(([k, v]) => `${k} (${Object.keys(v).length} colors)`).join(', ')}`);
+  for (const w of m.widgets) say(`  widget     ${w.id}: ${w.title.en} (${w.size})`);
+  if (m.theme) say(`  theme      ${[...Object.entries(m.theme.looks).map(([k, v]) => `${k} (${Object.keys(v).length} colors)`),
+    ...(m.theme.lineBadges ? [`${m.theme.lineBadges} line badges`] : []),
+    ...(m.theme.corners ? [`corners ${Object.entries(m.theme.corners).map(([k, v]) => `${k} ${v}`).join(', ')}`] : [])].join(', ')}`);
   for (const l of riderLines(m)) {
     say(`  riders see ${TOLD[l.what]}${l.detail.length ? `: ${l.detail.join(', ')}` : ''}`);
     if (l.note) say(`             from the publisher: ${[l.note.en, l.note.he].filter(Boolean).join(' / ')}`);
