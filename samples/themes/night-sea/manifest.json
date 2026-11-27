@@ -1,7 +1,7 @@
 {
   "format": 1, "kind": "theme", "minKav": 48, "api": 5,
   "name": "night-sea", "displayName": "Night sea", "version": "1.0.0", "release": 1,
-  "description": "Deep blue pages, a sea-green accent, line badges on a strip and softer corners. Colors only: no code.",
+  "description": "Deep blue pages, a sea-green accent, line badges on a strip, softer corners, a line round cards and buttons, and a sea-blue map at night. Colors only: no code.",
   "contributions": [],
   "theme": {
     "looks": {
@@ -13,6 +13,8 @@
       "light": { "bg": "#EEF3F6", "surface2": "#E1E9EE", "sunken": "#E6EDF1", "accent": "#2E7D72" }
     },
     "lineBadges": "strip",
-    "corners": { "card": 16, "sheet": 24, "tile": 10, "badge": 6 }
+    "corners": { "card": 16, "sheet": 24, "tile": 10, "badge": 6, "control": 12 },
+    "outline": "line",
+    "map": { "dark": { "ground": "#0B1622", "ink": "#9FD8E8", "water": "#102C44" } }
   }
 }

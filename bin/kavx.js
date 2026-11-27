@@ -47,11 +47,12 @@ const TOLD = {
   'slot-trip': "can add to a trip's page", 'slot-stop': 'can add to stop boards', 'widgets': 'adds widgets to the home screen', 'sees-searches': 'sees trip searches',
   'changes-results': 'changes results', 'keeps-data': 'keeps its settings on the phone', 'native': 'runs its own Android code: full access',
   'permissions': 'asks for permissions', 'actions': 'takes over', 'parts': "changes parts of Kav's screens",
-  'hooks': 'changes how Kav itself works',
+  'hooks': 'changes how Kav itself works', 'sees-screen': "sees a picture of Kav's screen, without what is typed",
 };
 
 function describe(m) {
   say(`  ${m.displayName} (${m.name}) ${m.version}, release ${m.release}${m.isTheme ? ', a theme' : ''}`);
+  if (m.displayNameHe) say(`  in Hebrew  ${m.displayNameHe}`);
   for (const c of m.contributions) say(`  does       ${c.capability} as "${c.id}"`);
   if (m.native) say(`  native     ${m.native.entry}, from ${m.native.dex}`);
   for (const p of m.screens.pages) say(`  page       ${p.id}: ${p.title.en}${p.tab ? ' (can be pinned as a tab)' : ''}${p.entry ? '' : ' (opened from another page only)'}`);
@@ -59,7 +60,11 @@ function describe(m) {
   for (const w of m.widgets) say(`  widget     ${w.id}: ${w.title.en} (${w.size})`);
   if (m.theme) say(`  theme      ${[...Object.entries(m.theme.looks).map(([k, v]) => `${k} (${Object.keys(v).length} colors)`),
     ...(m.theme.lineBadges ? [`${m.theme.lineBadges} line badges`] : []),
-    ...(m.theme.corners ? [`corners ${Object.entries(m.theme.corners).map(([k, v]) => `${k} ${v}`).join(', ')}`] : [])].join(', ')}`);
+    ...(m.theme.corners ? [`corners ${Object.entries(m.theme.corners).map(([k, v]) => `${k} ${v}`).join(', ')}`] : []),
+    ...(m.theme.font ? [`font ${m.theme.font}`] : []),
+    ...(m.theme.outline ? [`${m.theme.outline} outlines`] : []),
+    ...(m.theme.map ? [`the map toned in ${Object.keys(m.theme.map).join(', ')}`] : []),
+    ...(m.theme.skin ? [`a skin of ${Object.keys(m.theme.skin.pieces).length} pieces${m.theme.skin.background ? ' and a background' : ''}`] : [])].join(', ')}`);
   for (const l of riderLines(m)) {
     say(`  riders see ${TOLD[l.what]}${l.detail.length ? `: ${l.detail.join(', ')}` : ''}`);
     if (l.note) say(`             from the publisher: ${[l.note.en, l.note.he].filter(Boolean).join(' / ')}`);

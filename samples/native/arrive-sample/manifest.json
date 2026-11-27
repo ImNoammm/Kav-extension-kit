@@ -1,0 +1,11 @@
+{
+  "format": 1, "minKav": 48, "api": 5, "name": "arrive-sample", "displayName": "Arrive sample", "version": "1.0.0", "release": 1,
+  "description": "Faster routes first in your results, a notification five minutes before the trip you follow gets there, and a photo of your own on its settings screen.",
+  "native": {"dex": "classes.dex", "entry": "org.example.arrive.ArriveSample"},
+  "contributions": [
+    {"id": "faster", "capability": "results.add"},
+    {"id": "follow", "capability": "trips.follow"},
+    {"id": "screens", "capability": "page.provide"}
+  ],
+  "pages": [{"id": "settings", "title": {"en": "Arrive settings"}}]
+}

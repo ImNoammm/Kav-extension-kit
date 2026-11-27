@@ -118,6 +118,8 @@ declares it too:
 | `kav.trips()` | `"api": 5` and a contribution `trips.history` ([hooks.md](hooks.md#the-riders-trips-tripshistory-and-tripsfollow-api-5)) |
 | `kav.onTrip(...)` | `"api": 5` and a contribution `trips.follow` (the same) |
 | `kav.widget("next", ...)`, `kav.refreshWidget("next")` | `"api": 5`, a contribution `widget.provide` and the widget `{"id": "next", ...}` under `widgets` ([screens.md](screens.md#home-screen-widgets)) |
+| `kav.part("screen.overlay", "after", ...)` | `"api": 5` and a contribution `part.screen.overlay` ([below](#over-the-whole-screen)) |
+| `kav.capture(...)`, `kav.captureBehind(...)` | `"api": 5` and a contribution `screen.capture` (the same) |
 | `kav.settings()`, `kav.onSettings(...)` | `settings` ([screens.md](screens.md)) |
 | `kav.map()`, `kav.settingsScreen(...)`, notifications, location | nothing, but say so in `adds` so riders are told |
 
@@ -165,6 +167,13 @@ class Hello : KavExtension {
 | `vehicles(query)` | API 5: the live vehicles of a line, or around a place, as Kav's Live tab has them (the same) |
 | `departures(query)` | API 5: a stop's next departures, as its board in Kav shows them (the same) |
 | `addRides(rides)` | API 5: rides already over, into Kav's ride history (the same) |
+| `plan(query)` | API 5: Kav's own planner, its routes each with a `ref` ([hooks.md](hooks.md#kavs-own-planner-kavplan-resultsadd-and-kavswitchtrip-api-5)) |
+| `switchTrip(change)` | API 5: the trip under way goes on with a route `plan` gave (the same) |
+| `alarm(id, atMillis)` | API 5: wakes Kav at a time, with Kav closed too, and tells `onAlarm` ([below](#alarms-and-files)) |
+| `onAlarm(listener)` | API 5: told each of your alarms by its id (the same) |
+| `pickFile(types, picked)` | API 5: Android's photo or file picker over Kav's screen; told the file chosen, or `null` (the same) |
+| `capture(captured)` | API 5: a picture of Kav's screen as it shows now and the boxes of its pieces, on the main thread ([below](#over-the-whole-screen)) |
+| `captureBehind(captured)` | API 5: the same, and with it the screen without its pieces (the same) |
 | `card(on, card)` | a card on Kav's `"home"`, a line under each search result (`"results"`), a card on a trip's page (`"trip"`) or on a stop's board (`"stop"`) |
 | `screen(page, screen)` | a screen for one of your pages |
 | `home(screen)` | your Home body |
@@ -228,8 +237,7 @@ anything slow on a thread of your own.
 
 **Settings** are declared in the manifest: `text`, `number`, `toggle`, `choice`, and the ones Kav picks with its own
 pickers, `place`, `stop`, `time`, `date` and `color`, drawn by Kav on your extension's page
-([screens.md](screens.md#settings)). Kav's own Map style in github.com/ImNoammm/kav-extensions uses a `place` setting
-and its own color picker as `settingsScreen`.
+([screens.md](screens.md#settings)).
 
 **Hooks** (`provide`) take JSON text and answer JSON text. [hooks.md](hooks.md) has every field:
 
@@ -239,6 +247,7 @@ and its own color picker as `settingsScreen`.
 | `plan.provide` | `{"from": [lat, lon], "to": [lat, lon], "at", "way", "modes", "settings"}` | a plan, or `null` for no routes |
 | `board.stops` | `{}` | `{"stops": [...], "lines": {...}}` |
 | `board.departures` | `{"stop", "from", "limit"}` | an array of departures |
+| `results.add` | API 5: the search, `{"query", "routes", "trip"}` | `[{"ref", "start", "walks"}]`: routes from `plan`, first in the results ([hooks.md](hooks.md#kavs-own-planner-kavplan-resultsadd-and-kavswitchtrip-api-5)) |
 
 A route rule is asked within the search's shared budget (400 ms for all rules together, at most 150 to 200 ms
 each); a planner and a stop board within 30 seconds (`board.stops` 60). A hook that throws, answers late or answers
@@ -321,7 +330,7 @@ transit data, and a ride you add is your own, so none of these needs a contribut
 ```kotlin
 // Stops: any of near, name, mode (the GTFS route type of its lines, a train station 2), code; limit 20 by default.
 val stations = kav.stops("""{"near": [32.08, 34.78], "mode": 2, "limit": 5}""")
-// [{"stop": "il.mot/gtfs/stop/37292", "code": 37292, "name": "...", "city": "...", "lat", "lon", "mode": 2, "platform": "", "metres": 840}]
+// [{"stop": "il.mot/gtfs/stop/37292", "code": 37292, "name": "...", "nameHe": "...", "city": "...", "lat", "lon", "mode": 2, "platform": "", "metres": 840}]
 
 // Off the main thread: these two ask the network.
 val buses = kav.vehicles("""{"line": "37"}""")            // or {"near": [lat, lon], "km": 1}, or both
@@ -329,11 +338,14 @@ val buses = kav.vehicles("""{"line": "37"}""")            // or {"near": [lat, l
 val board = kav.departures("""{"stop": "il.mot/gtfs/stop/21345", "limit": 10}""")
 // [{"line": "37", "to": "...", "mode": 3, "platform": "", "at": 1795421100, "live": 1795421160, "cancelled": false}]
 
-// Rides already over, into Kav's ride history; the same key again updates one.
+// Rides already over, into Kav's ride history; the same key again updates one, and "removed" takes one out.
 kav.addRides("""[{"key": "r1", "kind": "BUS", "line": "37", "from": "...", "to": "...", "at": 1795421100000, "riders": 1, "band": 15, "price": 600}]""")
+kav.addRides("""[{"key": "r1", "removed": true}]""")
 ```
 
-- `stops` answers `null` until Kav's timetable has loaded; nearest first with `near`, else by name. From any thread.
+- `stops` answers `null` until Kav's timetable has loaded; nearest first with `near`, else by name. At most `limit`,
+  200 at most; with a `mode` other than bus (3) there is no cap, so a list of every station of one is whole. `name` is
+  the stop's name as Kav shows it, `nameHe` the timetable's own Hebrew name. From any thread.
 - `vehicles` and `departures` throw on the main thread. `vehicles` answers `null` when Kav's live source can't be
   reached; for `near`, Kav's server is told only the box around the place, in whole hundredths of a degree, as for the
   Live tab. With both `line` and `near`, the line's vehicles come nearest the place first, each with `metres`. `at` is
@@ -343,8 +355,31 @@ kav.addRides("""[{"key": "r1", "kind": "BUS", "line": "37", "from": "...", "to":
   both in seconds. `null` for a stop Kav doesn't know.
 - `addRides` takes `kind` `BUS`, `TRAIN` or `LIGHT_RAIL`, `at` in milliseconds, `band` the fare's reach in km and
   `price` in agorot, the same fields its ride history shows; Kav keeps each
-  key as `"ext:<your id()>:<key>"`, as with tickets, so you never touch another's rides or the ones Kav read. A ride
-  that isn't right (no key, another kind, no `at`) throws, and none of the list is added.
+  key as `"ext:<your id()>:<key>"`, as with tickets, so you never touch another's rides or the ones Kav read.
+  `{"key", "removed": true}` takes your ride with that key out, for one your pay service cancelled. An extension
+  installed from a bundle file gets a new `id()` with each file, so for it a key also covers the rides an earlier bundle
+  file of the same name left under that key: adding replaces them, removing takes them out. A ride that isn't right (no
+  key, another kind, no `at`) throws, and none of the list is added.
+
+### Alarms and files
+
+API 5. Kav wakes your extension at a time you set, with Kav closed too, and opens Android's own pickers for you.
+
+```kotlin
+// Told on a thread of Kav's, once your extension has started; the same id again moves an alarm, 0 takes it out.
+kav.onAlarm { id -> if (id == "check") checkTheTrip() }
+kav.alarm("check", System.currentTimeMillis() + 3 * 60_000)
+
+// Images only: Android's photo picker. Else its file picker for those MIME types (all files for null).
+kav.pickFile(arrayOf("image/*")) { uri -> if (uri != null) hero = Uri.parse(uri) }
+```
+
+- `alarm`: Android may hold an alarm a few minutes while the phone is idle, as with any app's alarm that needs no
+  special permission, and a restart of the phone drops them. At most 20 at a time; more throws. Set `onAlarm` in
+  `start`: when an alarm wakes Kav, Kav starts your extension first and then tells it, so the listener must be set by
+  then. From any thread.
+- `pickFile`: told the file chosen as a `content://` address you read with the `Context`'s `ContentResolver` while Kav
+  runs, or `null` when the rider closed the picker. Called from any thread; told on the main thread.
 
 ## API 4: taking over Kav
 
@@ -416,7 +451,7 @@ for the screen it was asked from, so `kavAction` on one of those works while tha
 | `nav.exit` | `{"trip"}` | Leaves navigation for Home, by its back button or Back. The trip goes on. | `ui/TripDetail.kt:138` |
 | `share.send` | `{"target": "copy" \| "more" \| <app package>, "name", "link"}` | A target in a trip's share sheet. `link` is `null` until Kav has made it. | `ui/ShareSheet.kt:583` |
 | `pay.mode` | `{"on": <boolean>, "from": "home" \| "settings" \| "setup"}` | Paying turned on (at once, or through setup) or off (Kav asks first), from Home's offer, the Paying switch or setup. | `ui/RavPass.kt:472` |
-| `pay.offer.hide` | `{}` | Hides Home's offer to set up paying. | `ui/RavPass.kt:301` |
+| `pay.offer.hide` | `{}` | Hides Home's offer to set up paying, its pay button with a yellow dot. From Kav 5.2 the rider has no way to hide it, so Kav never asks an extension for this one; `kavAction` still hides the offer. | `ui/ExtActions.kt:104` |
 | `pay.place.open` | `{"place"}` | Opens one of Rav-Pass's pages from Settings' Paying. See the place names below. | `ui/RavPass.kt:604` |
 | `pay.history.clear` | `{"rides"}` | Clear history in Settings' Paying. Kav's own asks first. | `ui/RavPass.kt:548` |
 | `ticket.ravpass.open` | Same as `ticket.header`. | Open in Rav-Pass on a Rav-Pass ticket. | `ui/TicketCard.kt:343` |
@@ -510,7 +545,7 @@ when the part next shows.
 | `settings.page.paying` | `{"page", "title"}` | The Paying Settings page body. | `ui/Settings.kt:284` |
 | `settings.page.live` | `{"page", "title"}` | Live times and trips, on the Privacy Settings page (once its own page, Providers; opening `live` opens Privacy). | `ui/Settings.kt:191` |
 | `settings.page.look` | `{"page", "title"}` | The Look Settings page body. | `ui/Settings.kt:284` |
-| `settings.page.language` | `{"page", "title"}` | The Language and time Settings page body. | `ui/Settings.kt:284` |
+| `settings.page.language` | `{"page", "title"}` | The Language and time body, which opens in a sheet over Settings. | `ui/Settings.kt:284` |
 | `settings.page.map` | `{"page", "title"}` | The Map Settings page body. | `ui/Settings.kt:284` |
 | `settings.page.privacy` | `{"page", "title"}` | The Privacy Settings page body. | `ui/Settings.kt:284` |
 | `settings.page.extensions` | `{"page", "title"}` | The Extensions Settings page body. | `ui/Settings.kt:284` |
@@ -524,8 +559,8 @@ when the part next shows.
 | `nav.card` | `{"trip", "step", "current"}` | Each step's card under way. | `ui/Navigate.kt:520` |
 | `nav.wait.details` | `{"trip", "leg", "index", "option"}` | In a step's Wait for card, after how busy the line usually is, once for each line the rider can take there. `leg` is that line's ride, `index` its place in `trip.legs`, `option` the line's place among them (0 the planned one). Kav draws nothing here itself. Needs `"api": 5`: a Kav with API 4 has no such part, and `kav.part` throws there. | `ui/Navigate.kt:876` |
 | `nav.ride.details` | `{"trip", "leg", "index"}` | In a step's Ride card, after the line's row and above paying. `leg` is the ride the rider chose, `index` its place in `trip.legs`. Kav draws nothing here itself. Needs `"api": 5`: a Kav with API 4 has no such part, and `kav.part` throws there. | `ui/Navigate.kt:922` |
-| `nav.banner` | `{"trip", "step", "kind", "leg", "index"}` | Under navigation's row of step dots, as wide as the row. `step` is the step the trip is on (from zero) and `kind` its kind (as in [trip events](hooks.md#the-riders-trips-tripshistory-and-tripsfollow-api-5)); `leg` is that step's leg, for a wait or a ride the line the rider chose, and `index` its place in `trip.legs` (`null` and `-1` for a step with no leg of its own, as a walk, the start and the end). Made again as the trip moves on to another step or the rider picks another line. Kav draws nothing here itself: each view sits on a glass card as wide as the row of dots, since it's over the map, and with no view navigation looks as it always did. Needs `"api": 5`: a Kav with API 4 has no such part, and `kav.part` throws there. | `ui/Navigate.kt:464` |
-| `ride.pay` | `{"trip", "leg", "index"}` | The pay row of a ride's card, on a trip's page and in navigation's cards: "Pay for this ride" (or a station's) and what to do, under which Kav shows the ride's ticket instead once it has one (and then no part). `leg` is the ride, `index` its place in `trip.legs`. Replaced, your view sits in Kav's own rounded row and is all of it, so its taps are yours. Kav 5.1 and older have no such part, and `kav.part` throws there. | `ui/RavPass.kt:337` |
+| `nav.banner` | `{"trip", "step", "kind", "leg", "index", "shown"}` | Under navigation's row of step dots, as wide as the row. `step` is the step the trip is on (from zero) and `kind` its kind (as in [trip events](hooks.md#the-riders-trips-tripshistory-and-tripsfollow-api-5)); `leg` is that step's leg, for a wait or a ride the line the rider chose, and `index` its place in `trip.legs` (`null` and `-1` for a step with no leg of its own, as a walk, the start and the end); `shown` is the step whose card the rider swiped to (Kav 5.2). Made again as the trip moves on to another step, the rider picks another line or swipes to another card. Kav draws nothing here itself: each view sits on a glass card as wide as the row of dots, since it's over the map, and with no view navigation looks as it always did. Needs `"api": 5`: a Kav with API 4 has no such part, and `kav.part` throws there. | `ui/Navigate.kt:464` |
+| `ride.pay` | `{"trip", "leg", "index"}` | The pay row of a ride's card, on a trip's page, in navigation's cards and on Home's current trip card: "Pay for this ride" (or a station's) and what to do, under which Kav shows the ride's ticket instead once it has one (and then no part). `leg` is the ride, `index` its place in `trip.legs`. Replaced, your view sits in Kav's own rounded row and is all of it, so its taps are yours. Kav 5.1 and older have no such part, and `kav.part` throws there. | `ui/RavPass.kt:337` |
 | `share.targets` | `{"link"}` | The share sheet's row of targets. | `ui/ShareSheet.kt:588` |
 | `ticket.codes` | `ticket.header`'s, with `"code"` and `"codes"` | The ticket's codes and the line under them. `code` is the one shown, from zero. | `ui/TicketCard.kt:311` |
 | `pay.setup` | `{"page": "get" \| "allow" \| "reader" \| "done"}` | The paying setup popup's page. | `ui/PaySetup.kt:137` |
@@ -544,7 +579,8 @@ when the part next shows.
 | `results.hidden` | `{"count", "reasons"}` | The row of routes the rider's rules hid, and why. Needs `"api": 5`. | `ui/DirectionsOnline.kt:927` |
 | `alert.sheet` | `{"label", "ids"}` | A service alert's notices, under its heading. Needs `"api": 5`. | `ui/Common.kt:611` |
 | `report.step` | `report`'s args, with `"step"` | Each page of the report form: `about`, `what`, `ride`, `more`, `you` or `check`. Needs `"api": 5`. | `ui/Report.kt:713` |
-| `search.result` | `{"place", "section", "index"}` | Each result of Kav's place search. `place` is as `place.pick` gives it; `section` is `recent`, `places` or `stops`. Needs `"api": 5`. | `ui/Pickers.kt:443` |
+| `search.result` | `{"place", "section", "index"}` | Each result of Kav's place search. `place` is as `place.pick` gives it; `section` is `frequent` (places the rider often goes to), `recent`, `around` (busy stations around the rider's town, while nothing is typed), `places` or `stops`. Needs `"api": 5`. | `ui/Pickers.kt:443` |
+| `screen.overlay` | `{}` | Over the whole of Kav's screen, under its dialogs and sheets: `"after"` only ([below](#over-the-whole-screen)). Needs `"api": 5`. | `MainActivity.kt:939` |
 
 `{"trip"}` is the route as route rules get it ([hooks.md](hooks.md)); `leg` one of its `legs`, and `index` its place
 in them. API 3's cards still sit where they always did, beside these parts: `home` after `home.suggestions`, `trip`
@@ -552,6 +588,61 @@ after `trip.timeline`, `stop` at the top of `stop.board`, `results` inside each 
 
 The Settings page IDs are `trips`, `paying`, `live`, `look`, `language`, `map`, `privacy`, `extensions`, and `kav`.
 Ticket parts supply display metadata. The passenger names and ticket codes stay in Kav's ticket view.
+
+### Over the whole screen
+
+The part `screen.overlay` puts your view over the whole of Kav's screen, as big as the screen, under Kav's dialogs
+and sheets (they are windows of their own). Only `"after"` is taken: `"before"` and `"replace"` throw. Your view is
+see-through where it draws nothing, and a touch it doesn't take (`false` from its first `onTouchEvent`, the default
+of a plain `View`) goes on to Kav as if your view weren't there; one it takes is yours to the end. It isn't shown in
+picture in picture, nor in safe mode. A view that wants Back while it shows takes focus (`setFocusable(true)`,
+`requestFocus()`) and handles `KEYCODE_BACK` in `onKeyDown`; let go of focus when you're done, or Back stays yours.
+
+`kav.capture(captured)`, with a contribution `screen.capture`, tells you what Kav's screen shows now, on the main
+thread: a `Bitmap` the size of your overlay view, with Kav's maps in it and what your own view draws (draw nothing
+while you ask, for Kav's screen alone), and its pieces as JSON text:
+
+```json
+[{"x": 48, "y": 312, "w": 984, "h": 168, "kind": "button"}, {"x": 64, "y": 560, "w": 420, "h": 52, "kind": "text"}]
+```
+
+Each box is in the picture's pixels, which are your overlay view's. `kind` is `button` (it takes a tap, a long press
+or a toggle; what it holds is part of it), `field` (text can be typed in it), `card` (a surface that draws its own
+background, like a card, the tab bar or a sheet; what it holds is part of it, so no empty background is left behind),
+`text` or `image`, in the order the screen has them, at most 300. A piece smaller than 4 px isn't given, nor a button
+or field taking more than half of the screen, or a card more than nine tenths of it (those are looked into for their
+own pieces), nor one all covered by what is drawn over it, like a page open over another. The picture
+is `null` and the pieces `[]` when Kav isn't in front or the picture couldn't be taken. The picture is yours:
+`recycle()` it when you're done.
+
+What you are never given: a piece's text, description or value, and what is typed. Each field's inside is painted
+over in its own color in the picture, so a search, a name or a password typed in Kav isn't in it. Everything else
+Kav shows is in the picture as the rider sees it. Riders are told on your extension's page that it "Sees a picture of
+Kav's screen, without what you type"; say why in a reason (`"reasons": {"screen.capture": ...}`).
+
+`kav.captureBehind(captured)` tells you the same, and with it `behind`: Kav's screen without its pieces, a second
+`Bitmap` the same size, made off the screen, so nothing on Kav's screen changes while it's made. Where each piece is,
+it has what Kav draws behind the piece: its background, a theme's background picture, a skin's top bar or card, and
+its maps. Where that isn't what shows just around the piece (a page of one color), the piece's place is that color
+instead, the one seen most around it. Everything else is the picture as it is, fields painted over too. Both are
+`null` when the picture is; `behind` is yours to `recycle()` as well. It costs a little more than `capture`, so ask
+for it only when you need the places pieces leave.
+
+With `captureBehind`, the picture has only the pieces, each with only what is its own: what of a piece's box is what is
+behind it (the map under a button, the background around a place's tile) is clear, and so is everything in no piece.
+Drawn over `behind`, it is the screen again. Each piece's box is tight to what is its own, and a piece with nothing of
+its own (a box that only lies over the map) isn't in `pieces`. So a piece you cut from the picture by its box carries
+its own face and nothing of what was around it.
+
+To move Kav's pieces about, draw `behind` over the whole of your view (that hides Kav's own screen, which stays as it
+was under it), and draw each piece from the picture where it moves to. Take every touch while you do, so none reaches
+Kav's screen you hide; draw nothing and take no touch when you're done.
+
+```java
+kav.part("screen.overlay", "after", (context, about) -> overlay = new MyOverlay(context));
+// Later, on a shake:
+kav.captureBehind((picture, behind, pieces) -> { if (picture != null) overlay.start(picture, behind, new JSONArray(pieces)); });
+```
 
 ### The trip notification's buttons
 
